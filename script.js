@@ -21,61 +21,48 @@ function renderBoard() {
 
   for (var i = 0; i < images.length; i++) {
     var tile = document.createElement("div");
-    tile.className = "tile";
-    tile.dataset.index = i;
-    tile.style.backgroundImage = "url(" + images[i] + ")";
+    if (images[i] !== "") {
+      var img = document.createElement("img");
+      img.src = images[i];
+      tile.appendChild(img);
+    }
+    tile.setAttribute("onclick", "moveTile(" + i + ")");
     puzzleBoard.appendChild(tile);
+  }
+}
 
-    if (images[i] === "") {
-      tile.classList.add("empty");
-      tile.draggable = false;
-    } else {
-      tile.addEventListener("dragstart", dragStart);
-      tile.addEventListener("dragover", dragOver);
-      tile.addEventListener("dragenter", dragEnter);
-      tile.addEventListener("dragleave", dragLeave);
-      tile.addEventListener("drop", dragDrop);
-      tile.addEventListener("dragend", dragEnd);
+function moveTile(index) {
+  if (isValidMove(index)) {
+    var emptyIndex = images.indexOf("");
+    swapTiles(index, emptyIndex);
+    renderBoard();
+
+    if (isSolved()) {
+      alert("Selamat! Anda menyelesaikan puzzle.");
     }
   }
 }
 
-function dragStart(e) {
-  e.dataTransfer.setData("text/plain", e.target.dataset.index);
-  e.target.classList.add("dragging");
-}
-
-function dragOver(e) {
-  e.preventDefault();
-}
-
-function dragEnter(e) {
-  e.target.classList.add("over");
-}
-
-function dragLeave(e) {
-  e.target.classList.remove("over");
-}
-
-function dragDrop(e) {
-  e.preventDefault();
-  var dragIndex = e.dataTransfer.getData("text/plain");
-  var dropIndex = e.target.dataset.index;
-  swapTiles(dragIndex, dropIndex);
-}
-
-function dragEnd(e) {
-  e.target.classList.remove("over");
-  e.target.classList.remove("dragging");
+function isValidMove(index) {
+  var emptyIndex = images.indexOf("");
+  var rowDiff = Math.abs(Math.floor(emptyIndex / 3) - Math.floor(index / 3));
+  var colDiff = Math.abs((emptyIndex % 3) - (index % 3));
+  return (rowDiff + colDiff === 1);
 }
 
 function swapTiles(index1, index2) {
-  var puzzleBoard = document.getElementById("puzzleBoard");
-  var tiles = puzzleBoard.querySelectorAll(".tile");
+  var temp = images[index1];
+  images[index1] = images[index2];
+  images[index2] = temp;
+}
 
-  var tempBg = tiles[index1].style.backgroundImage;
-  tiles[index1].style.backgroundImage = tiles[index2].style.backgroundImage;
-  tiles[index2].style.backgroundImage = tempBg;
+function isSolved() {
+  for (var i = 0; i < images.length - 1; i++) {
+    if (images[i] !== "image" + (i + 1) + ".jpg") {
+      return false;
+    }
+  }
+  return true;
 }
 
 function shuffle(array) {
